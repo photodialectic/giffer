@@ -8,38 +8,38 @@ def cli():
 @cli.command()
 @click.option('-i', '--inputfile', type=click.Path(exists=True))
 @click.option('-o', '--outputfile',  type=click.Path(exists=False))
-@click.option('--fps', type=int, default=12, prompt="Frames per second")
-@click.option('--resize', type=float, default=1, prompt="Resize, 1 for none")
+@click.option('--fps', type=int, default=24, prompt="Frames per second...")
+@click.option('--resize', type=float, default=1, prompt="Reduce size by...")
 def convert(inputfile, outputfile, fps, resize):
     clip = (VideoFileClip(inputfile).resize(resize))
     clip.write_gif(outputfile, fps=fps)
 
 
-#def main(argv):
-#    inputfile = ''
-#    outputfile= ''
-#    fps=12
-#    resize=.5
-#    helpmsg = 'giffer.py -i <inputfile> -o <outputfile>'
-#    try:
-#        opts, args = getopt.getopt(argv, "hi:o:", ["ifile=", "ofile"])
-#    except getopt.GetoptError:
-#        print helpmsg
-#        sys.exit(2)
-#    for opt, arg in opts:
-#        if opt == '-h':
-#            print helpmsg
-#            sys.exit()
-#        if opt in ("-i", "--ifile"):
-#            inputfile = arg
-#        elif opt in ("-o", "--ofile"):
-#            outputfile = arg
-#
-#    clip = (VideoFileClip(inputfile).resize(resize))
-#    clip.write_gif(outputfile, fps=fps)
-#
-#if __name__ == "__main__":
-#    if len(sys.argv) == 1:
-#        print "WTF"
-#        sys.exit(2)
-#    main(sys.argv[1:])
+@cli.command()
+@click.option('-i', '--inputfile', type=click.Path(exists=True))
+@click.option('-o', '--outputfile',  type=click.Path(exists=False))
+@click.option('--fps', type=int, default=5, prompt="Frames per second...")
+@click.option('--resize', type=float, default=1, prompt="Reduce size by...")
+@click.option('--speed', type=float, default=1, prompt="Reduce speed by...")
+def loop(inputfile, outputfile, fps, resize, speed):
+    clip = (VideoFileClip(inputfile, audio=False).resize(resize).speedx(speed))
+    d = clip.duration
+    clip = clip.crossfadein(d/2)
+    composition = (CompositeVideoClip([clip,
+                                       clip.set_start(d/2),
+                                       clip.set_start(d)])
+                   .subclip(d/2, 3*d/2))
+    composition.write_gif(outputfile, fps=5, fuzz=5)
+
+@cli.command()
+@click.option('-i', '--inputfile', type=click.Path(exists=True))
+@click.option('-o', '--outputfile',  type=click.Path(exists=False))
+@click.option('--fps', type=int, default=12, prompt="Frames per second...")
+@click.option('--fuzz', type=int, default=2, prompt="Fuzz...")
+@click.option('--resize', type=float, default=1, prompt="Reduce size by...")
+def symetrize(inputfile, outputfile, fps, fuzz, resize):
+    clip = (VideoFileClip(inputfile, audio=False).resize(resize).fx(time_symetrize))
+    clip.write_gif(outputfile, fps=fps, fuzz=fuzz)
+
+def time_symetrize(clip):
+    return concatenate([clip, clip.fx( vfx.time_mirror )])
