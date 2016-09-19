@@ -10,9 +10,10 @@ def cli():
 @click.option('-o', '--outputfile',  type=click.Path(exists=False))
 @click.option('--fps', type=int, default=24, prompt="Frames per second...")
 @click.option('--resize', type=float, default=1, prompt="Reduce size by...")
-def convert(inputfile, outputfile, fps, resize):
+@click.option('--fuzz', type=int, default=0, prompt="Optimize [0-100]")
+def convert(inputfile, outputfile, fps, resize, fuzz):
     clip = (VideoFileClip(inputfile).resize(resize))
-    clip.write_gif(outputfile, fps=fps)
+    clip.write_gif(outputfile, fps=fps, fuzz=fuzz)
 
 
 @cli.command()
@@ -29,7 +30,7 @@ def loop(inputfile, outputfile, fps, resize, speed):
                                        clip.set_start(d/2),
                                        clip.set_start(d)])
                    .subclip(d/2, 3*d/2))
-    composition.write_gif(outputfile, fps=5, fuzz=5)
+    composition.write_gif(outputfile, fps=fps, fuzz=fuzz)
 
 @cli.command()
 @click.option('-i', '--inputfile', type=click.Path(exists=True))
